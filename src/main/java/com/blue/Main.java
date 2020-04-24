@@ -14,11 +14,11 @@ import discord4j.core.GatewayDiscordClient;
 import java.nio.file.Files;
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
-import java.util.HashMap;
 import java.util.List;
+import java.util.LinkedList;
 import java.util.Arrays;
-import java.util.stream.Stream;
+
+import com.blue.commands.Ping;
 import com.blue.Command;
 
 public class Main {
@@ -31,9 +31,9 @@ public class Main {
 
         gateway.getEventDispatcher().on(MessageCreateEvent.class)
                 .subscribe(event -> {
-                    for (String key : commands.keySet()) {
-                        if (event.getMessage().getContent().startsWith('!' + key)) {
-                            commands.get(key).execute(event);
+                    for (Command command : commands) {
+                        if (event.getMessage().getContent().startsWith('!' + command.getNames().get(0))) {
+                            command.execute(event);
                             break;
                         }
                     }
@@ -44,16 +44,10 @@ public class Main {
     }
     
     // keys are the names of the command, and the value is a command instance
-    private static final Map<String, Command> commands = new HashMap<>();
+    private static final List<Command> commands = new LinkedList<>();
 
     static {
-        commands.put("ping", new Command() {
-            @Override
-            public void execute(MessageCreateEvent event) {
-                event.getMessage().getChannel().block()
-                        .createMessage("Pong!").block();
-            }
-        });
+        commands.add(new Ping());
     }
 
     private static String getKey() {
