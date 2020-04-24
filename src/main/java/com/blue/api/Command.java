@@ -1,4 +1,4 @@
-package com.blue;
+package com.blue.api;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 
@@ -9,6 +9,12 @@ public interface Command {
      *@return all the command names associated with this command
      */
     List<String> getNames();
+
+    /**
+     *@return the short explanation associated with the command
+     */
+    String getShorthelp();
+
     /**
      *
      *

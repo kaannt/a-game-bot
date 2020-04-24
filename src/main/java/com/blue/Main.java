@@ -19,7 +19,7 @@ import java.util.LinkedList;
 import java.util.Arrays;
 
 import com.blue.commands.Ping;
-import com.blue.Command;
+import com.blue.api.Command;
 
 public class Main {
     public static void main(String[] args) {
