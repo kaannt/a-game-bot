@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.LinkedList;
 import java.util.Arrays;
 
-import com.blue.commands.Ping;
+import com.blue.commands.*;
 import com.blue.api.Command;
 
 public class Main {
@@ -44,10 +44,11 @@ public class Main {
     }
     
     // keys are the names of the command, and the value is a command instance
-    private static final List<Command> commands = new LinkedList<>();
+    public static final List<Command> commands = new LinkedList<>();
 
     static {
         commands.add(new Ping());
+        commands.add(new Help());
     }
 
     private static String getKey() {
