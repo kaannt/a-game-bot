@@ -2,12 +2,12 @@ package com.blue.commands;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Message;
+import discord4j.rest.util.Color;
 
 import com.blue.api.DefaultCommand;
 
 import java.util.Arrays;
 import java.util.List;
-import java.awt.Color;
 
 
 public class Ping extends DefaultCommand {

@@ -24,10 +24,10 @@ import com.blue.api.Command;
 public class Main {
     public static void main(String[] args) {
         final DiscordClient client = DiscordClientBuilder.create(getKey()).build();        
-        GatewayDiscordClient gateway = client.login().block();
+        final GatewayDiscordClient gateway = client.login().block();
 
         gateway.on(ReadyEvent.class)
-                .subscribe(ready -> System.out.println("Logged in as " + ready.getSelf().getUsername()));
+               .subscribe(ready -> System.out.println("Logged in as " + ready.getSelf().getUsername()));
 
         gateway.getEventDispatcher().on(MessageCreateEvent.class)
                 .subscribe(event -> {
