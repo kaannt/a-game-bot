@@ -5,11 +5,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public abstract class DefaultCommand implements Command {
-    private List<String> names;
+    private String name;
     private String shorthelp;
 
-    public DefaultCommand(List<String> names, String shorthelp) {
-        this.names = names;
+    public DefaultCommand(String name, String shorthelp) {
+        this.name = name;
         this.shorthelp = shorthelp;
     }
 
@@ -19,7 +19,7 @@ public abstract class DefaultCommand implements Command {
     }
 
     @Override
-    public List<String> getNames() {
-        return names;
+    public String getName() {
+        return name;
     }
 }

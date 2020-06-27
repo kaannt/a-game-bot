@@ -17,9 +17,11 @@ import java.io.IOException;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Arrays;
+import java.util.Optional;
 
 import com.blue.commands.*;
 import com.blue.api.Command;
+import com.blue.api.Context;
 
 public class Main {
     public static void main(String[] args) {
@@ -27,17 +29,29 @@ public class Main {
         final GatewayDiscordClient gateway = client.login().block();
 
         gateway.on(ReadyEvent.class)
-               .subscribe(ready -> System.out.println("Logged in as " + ready.getSelf().getUsername()));
+               .subscribe(ready -> {
+                   System.out.println("Logged in as " + ready.getSelf().getUsername());
+               });
 
-        gateway.getEventDispatcher().on(MessageCreateEvent.class)
-                .subscribe(event -> {
-                    for (Command command : commands) {
-                        if (event.getMessage().getContent().startsWith('!' + command.getNames().get(0))) {
-                            command.execute(event);
-                            break;
-                        }
-                    }
-                });
+        gateway.getEventDispatcher()
+               .on(MessageCreateEvent.class)
+               .subscribe(event -> {
+                   String message = event.getMessage().getContent();
+
+                   if (event.getMessage().getAuthor().get().isBot() || 
+                       !Util.getPrefix(message) && 
+                       !Util.listGetter(commands, c -> c.getName()).contains(message.substring(1)))
+                       return;
+                   
+                   Context ctx = new Context(message, event.getMessage().getChannel(), event.getMessage());
+                   Optional<Command> cmd = commands.stream()
+                                                   .filter(c -> c.getName().equals(message.substring(1)))
+                                                   .findFirst();
+                   if (!cmd.isPresent())
+                       return;
+                   
+                   cmd.get().execute(ctx);
+               });
 
         gateway.onDisconnect().block();
 
