@@ -9,6 +9,7 @@ import discord4j.core.object.entity.Member;
 import discord4j.core.object.VoiceState;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.object.entity.Message;
+import discord4j.core.object.entity.User;
 import discord4j.core.GatewayDiscordClient;
 
 import java.nio.file.Files;
@@ -38,7 +39,7 @@ public class Main {
                .subscribe(event -> {
                    String message = event.getMessage().getContent();
 
-                   if (event.getMessage().getAuthor().get().isBot() || 
+                   if (event.getMessage().getAuthor().map(User::isBot).orElse(false) || 
                        !Util.getPrefix(message) && 
                        !Util.listGetter(commands, c -> c.getName()).contains(message.substring(1)))
                        return;
@@ -63,6 +64,7 @@ public class Main {
     static {
         commands.add(new Ping());
         commands.add(new Help());
+        commands.add(new Xkcd());
     }
 
     private static String getKey() {

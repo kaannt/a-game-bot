@@ -26,6 +26,6 @@ public class Help extends DefaultCommand {
                        .setColor(Color.CYAN)
                        .setTitle("All Commands:"));
            }))
-           .block(); 
+           .subscribe();
     }
 }
