@@ -8,16 +8,6 @@ import com.blue.api.Command;
 
 
 public class Util {
-    /*
-    public static List<String> listGetter(Iterable<Command> source, Function<Command, String> mapper) {
-        List<String> temp = new ArrayList<>(); 
-
-        for (Command item : source)
-            temp.add(mapper.apply(item));
-
-        return temp;
-    }
-    */
     public static <X, Y> List<Y> listGetter(Iterable<X> source, Function<X, Y> mapper) {
         List<Y> temp = new ArrayList<>(); 
 
@@ -30,4 +20,6 @@ public class Util {
     public static boolean getPrefix(String message) {
         return message.startsWith("!");
     }
+
+
 }

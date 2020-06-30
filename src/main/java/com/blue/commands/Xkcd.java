@@ -7,8 +7,6 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Random;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 import org.jsoup.Jsoup;
 
@@ -16,7 +14,7 @@ import com.blue.api.DefaultCommand;
 import com.blue.api.Context;
 
 public class Xkcd extends DefaultCommand {
-    private HttpClient client;
+    private final HttpClient client;
     private static final String base = "https://xkcd.com/";
     private static final int TOTAL_COMICS = 2326;
 
@@ -28,12 +26,11 @@ public class Xkcd extends DefaultCommand {
     @Override
     public void execute(Context ctx) {
         HttpRequest request = HttpRequest.newBuilder()
-            .uri(URI.create(base + new Random().nextInt(TOTAL_COMICS) + "/"))
+            .uri(URI.create(base + (ctx.getArgs().length > 0 ? ctx.getArgs()[0] : new Random().nextInt(TOTAL_COMICS)) + "/"))
             .timeout(Duration.ofMinutes(1))
             .GET()
             .build();
 
-        CompletableFuture<String> comic = new CompletableFuture<>();
         client.sendAsync(request, BodyHandlers.ofString())
             .thenApply(HttpResponse::body)
             .thenAccept(body -> {

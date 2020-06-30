@@ -37,20 +37,22 @@ public class Main {
         gateway.getEventDispatcher()
                .on(MessageCreateEvent.class)
                .subscribe(event -> {
-                   String message = event.getMessage().getContent();
+                   String[] message = event.getMessage().getContent().split(" ");
 
-                   if (event.getMessage().getAuthor().map(User::isBot).orElse(false) || 
-                       !Util.getPrefix(message) && 
-                       !Util.listGetter(commands, c -> c.getName()).contains(message.substring(1)))
+                   if (event.getMember().map(Member::isBot).orElse(false) ||
+                       !Util.getPrefix(message[0]) &&
+                       !Util.listGetter(commands, Command::getName).contains(message[0].substring(1)))
                        return;
                    
-                   Context ctx = new Context(message, event.getMessage().getChannel(), event.getMessage());
+
                    Optional<Command> cmd = commands.stream()
-                                                   .filter(c -> c.getName().equals(message.substring(1)))
+                                                   .filter(c -> c.getName().equals(message[0].substring(1)))
                                                    .findFirst();
-                   if (!cmd.isPresent())
+                   if (cmd.isEmpty())
                        return;
-                   
+
+                   Context ctx = new Context(Arrays.copyOfRange(message, 1, message.length), event.getMessage().getChannel(),
+                                             event.getMessage(), event.getMember());
                    cmd.get().execute(ctx);
                });
 
@@ -65,6 +67,7 @@ public class Main {
         commands.add(new Ping());
         commands.add(new Help());
         commands.add(new Xkcd());
+        commands.add(new Uno());
     }
 
     private static String getKey() {
