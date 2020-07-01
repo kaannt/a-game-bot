@@ -22,6 +22,11 @@ public class Context {
         this.member = member;
     }
 
+    public void sendPublic(String message) {
+        channel.flatMap(ch -> ch.createMessage(message))
+                .block();
+    }
+
     public String[] getArgs() {
         return args;
     }
