@@ -60,7 +60,6 @@ public class Main {
 
     }
     
-    // keys are the names of the command, and the value is a command instance
     public static final List<Command> commands = new LinkedList<>();
 
     static {

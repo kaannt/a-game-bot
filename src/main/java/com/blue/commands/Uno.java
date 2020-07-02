@@ -48,6 +48,8 @@ public class Uno extends DefaultCommand {
             ingame.get().showHand();
         else if ("draw".equals(args[0]) && playing)
             ingame.get().drawFromMiddle();
+        else if (waitForColor)
+            updateColor(ingame.get(), args, ctx);
         else
             continueGame(ingame.get(), args, ctx);
     }
@@ -70,6 +72,7 @@ public class Uno extends DefaultCommand {
         }
 
         public void showHand() {
+            hand.sort(Comparator.comparing(Card::getColor).thenComparing(Card::getValue));
             m.getPrivateChannel()
                     .flatMap(ch -> ch.createMessage(hand.stream()
                             .map(c -> c.getColor().getEmoji() + (c instanceof SCard ? ((SCard) c).move.emoji : c.getValue()))
@@ -99,12 +102,16 @@ public class Uno extends DefaultCommand {
             return color;
         }
 
+        public void setColor(Color color) {
+            this.color = color;
+        }
+
         abstract String getValue();
         abstract boolean goOnTopOf(Card c);
     }
 
     static class NumCard extends Card {
-        int value;
+        final int value;
 
         public NumCard(Color color, int value) {
             super(color);
@@ -126,7 +133,7 @@ public class Uno extends DefaultCommand {
     }
 
     static class SCard extends Card {
-        Move move;
+        final Move move;
 
         public SCard(Color color, Move move) {
             super(color);
@@ -182,6 +189,7 @@ public class Uno extends DefaultCommand {
     private List<Card> deck;
     private Card middle;
     private int next;
+    private boolean waitForColor;
 
     private void startGame(Context ctx) {
         deck = genDeck();
@@ -191,6 +199,7 @@ public class Uno extends DefaultCommand {
         }
         Collections.shuffle(players);
         next = new Random().nextInt(players.size());
+        waitForColor = false;
 
         players.forEach(p -> {
             for (int i = 0; i < 7; i++)
@@ -222,6 +231,8 @@ public class Uno extends DefaultCommand {
                                     .add(deck.remove(0));
                         }
                         ctx.sendPublic(players.get((next + 1) % players.size()).m.getUsername() + " had to draw four");
+                        ctx.sendPublic(player.m.getNicknameMention() + " choose a color");
+                        waitForColor = true;
                         update(player, choice.get(), ctx, 1);
                         break;
                     case SKIP:
@@ -234,7 +245,7 @@ public class Uno extends DefaultCommand {
                         update(player, choice.get(), ctx, 1);
                         break;
                     case DRAW_TWO:
-                        IntStream.range(0, 3)
+                        IntStream.range(0, 2)
                                 .forEach(i -> players.get((next + 1) % players.size())
                                         .getHand()
                                         .add(deck.remove(0)));
@@ -242,7 +253,8 @@ public class Uno extends DefaultCommand {
                         update(player, choice.get(), ctx, 1);
                         break;
                     case WILD:
-                        ctx.sendPublic("wild card");
+                        ctx.sendPublic(player.member().getNicknameMention() + " choose a color");
+                        waitForColor = true;
                         update(player, choice.get(), ctx, 1);
                         break;
                 }
@@ -253,8 +265,15 @@ public class Uno extends DefaultCommand {
 
     private void update(Player player, Card choice, Context ctx, int forward) {
         player.getHand().remove(choice);
+        if (player.getHand().isEmpty()) {
+            gameOver(player, ctx);
+            return;
+        } else if (player.getHand().size() == 1)
+            ctx.sendPublic(player.m.getNicknameMention() + " has uno!");
         deck.add(middle);
         middle = choice;
+        if (choice instanceof SCard && (((SCard) choice).move == Move.WILD || ((SCard) choice).move == Move.DRAW_FOUR))
+            return;
         next = (next + forward) % players.size();
         rotate(ctx);
     }
@@ -264,6 +283,30 @@ public class Uno extends DefaultCommand {
                         (middle instanceof SCard ? ((SCard) middle).move.getEmoji() : middle.getValue()));
         ctx.sendPublic(players.get(next).member().getNicknameMention() + "s turn");
         players.get(next).showHand();
+    }
+
+    private void gameOver(Player player, Context ctx) {
+        ctx.sendPublic(player.m.getNicknameMention() + " has won the game!");
+        ctx.sendPublic("Ending game...");
+        players.clear();
+        deck.clear();
+        playing = false;
+    }
+
+    private void updateColor(Player player, String[] args, Context ctx) {
+        if (!player.equals(players.get(next)))
+            return;
+        else
+            for (Color color : Color.values())
+                if (color.name().equalsIgnoreCase(args[0])) {
+                    middle.setColor(color);
+                    ctx.sendPublic("New color is now: " + color.getEmoji());
+                    waitForColor = false;
+                    next = (next + 1) % players.size();
+                    rotate(ctx);
+                    return;
+                }
+            ctx.sendPublic("Not a valid color");
     }
 
     private List<Card> genDeck() {
